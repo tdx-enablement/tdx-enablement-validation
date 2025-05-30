@@ -1,6 +1,6 @@
 import subprocess
 import os
-from utils import get_ip_address, clone_repo, run_command_with_popen, set_environment_variables, run_command
+from utils import get_ip_address, clone_repo, set_environment_variables, run_command
 import shutil
 import time
 
@@ -14,18 +14,13 @@ class KBSEnvConfig:
             "KEY_MANAGER": "VAULT",
             "ADMIN_USERNAME": os.getenv("ADMIN_USERNAME", "test"),
             "ADMIN_PASSWORD": os.getenv("ADMIN_PASSWORD", "test@123456"),
-            "HTTP_READ_HEADER_TIMEOUT": 2,
-            "BEARER_TOKEN_VALIDITY_IN_MINUTES": 2,
             "TRUSTAUTHORITY_API_URL": "https://api.trustauthority.intel.com",
             "TRUSTAUTHORITY_API_KEY": os.getenv("TRUSTAUTHORITY_API_KEY", "ZBixzqA3As2abpQsxgWin2wprwwZ6kiWuJjkr0103"),
             "TRUSTAUTHORITY_BASE_URL": os.getenv("TRUSTAUTHORITY_BASE_URL", "https://portal.trustauthority.intel.com"),
-            "AUTHENTICATION_DEFEND_MAX_ATTEMPTS": 2,
-            "AUTHENTICATION_DEFEND_INTERVAL_MINUTES": 2,
-            "AUTHENTICATION_DEFEND_LOCKOUT_MINUTES": 2,
-            "SAN_LIST": f"127.0.0.1,{get_ip_address()}",
+            "SAN_LIST": f"{get_ip_address()}",
             "VAULT_SERVER_IP": "127.0.0.1",
             "VAULT_SERVER_PORT": 8200,
-            "VAULT_CLIENT_TOKEN": os.getenv("VAULT_CLIENT_TOKEN", "hvs.************************")
+            "VAULT_CLIENT_TOKEN": os.environ['VAULT_ROOT_TOKEN']
         }
         self.config.update(kwargs)
 
@@ -69,7 +64,7 @@ def run_kbs_container(env_file):
         "-v", f"{os.getcwd()}/{dir_name}/data/certs:/etc/kbs/certs",
         "-v", "/etc/hosts:/etc/hosts",
         "-v", f"{os.getcwd()}/{dir_name}/data:/opt/kbs",
-        "trustauthority/key-broker-service:v1.2.0"
+        "trustauthority/key-broker-service:v1.3.0"
     ]
     try:
         # Run the command
@@ -84,7 +79,7 @@ def get_docker_logs():
     return result.stdout.decode()
 
 def setup_kbs_environment():
-    clone_repo("https://github.com/intel/trustauthority-kbs.git", dir_name, branch="v1.2.0")
+    clone_repo("https://github.com/intel/trustauthority-kbs.git", dir_name, branch="v1.3.0")
     build_kbs()
     setup_directories()
 
