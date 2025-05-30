@@ -20,24 +20,30 @@ def run_command(command, shell=False, cwd=None):
         print(f"Error: {e.stderr}")
         return e.stderr
 
-def run_command_with_popen(command, cwd=None, shell=False):
+def run_command_with_popen(command, cwd=None, shell=False, timeout=600):
     """Run a command in a subprocess and print the output in real-time."""
     print(f"Executing command : {command}")
     process = subprocess.Popen(command, cwd=cwd, shell=shell, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-    # Print the output in real-time
+    output_lines = []
+    start_time = time.time()
     while True:
         output = process.stdout.readline()
         if output == '' and process.poll() is not None:
             break
         if output:
             print(output.strip())
+            output_lines.append(output.strip())
+        elapsed_time = time.time() - start_time
+        if elapsed_time > timeout:
+            print("Timeout reached. Terminating process.")
+            process.terminate()
+            return -1, output_lines
 
     # Print any remaining errors
     stderr = process.communicate()[1]
     if stderr:
         print(stderr.strip())
-    return process.returncode
+    return process.returncode, output_lines
 
 def set_environment_variables(key=None, data=None):
     """Set environment variables for a specific key and from a string of key-value pairs.
