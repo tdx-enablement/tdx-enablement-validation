@@ -4,6 +4,7 @@ import pytest
 import random
 import string
 import subprocess
+import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
 from fde import *
@@ -31,7 +32,9 @@ class TestClass:
 
     def encrypt_and_verify_image(self, skip_encrypt_image_path=False, extra_args=None):
         """Encrypts the image using the FDE key and verifies the TD encrypted image."""
+        print("creating the encrypted image with FDE key")
         assert encrypt_image("TD_FDE_BOOT", skip_encrypt_image_path=skip_encrypt_image_path, extra_args=extra_args), "Failed to encrypt the base image"
+        print("verifying the TD encrypted image")
         return verify_td_encrypted_image()
 
     def run_command_with_unset_env(self, cmd, unset_var):
@@ -71,6 +74,7 @@ class TestClass:
         quote_set_success, keys_set_success = self.fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert keys_set_success, "Failed to generate encryption keys"
+        time.sleep(5)
         assert self.encrypt_and_verify_image(), "TD encrypted image verification failed"
 
     def test_e2e_fde_workflow_with_skip_e_arg(self):
@@ -293,13 +297,22 @@ class TestClass:
         quote_set_success, keys_set_success = self.fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert keys_set_success, "Failed to generate encryption keys"
-        
+
+        # copy encrypted image to a image directory
+        os.makedirs('image', exist_ok=True)
+        os.system(f"cp {os.environ['ENCRYPTED_IMAGE_PATH']} image/")
+        os.system(f"cp {os.environ['OVMF_PATH']} image/")
+
         # Verify the encrypted image
         assert self.encrypt_and_verify_image(), "TD encrypted image verification failed"
 
         print(f"current FDE KEY : {os.environ["k_RFS"]}")
         # Retrieve the FDE key again to ensure it matches the original
         set_environment_variables(data=retrieve_encryption_key())
+
+        set_environment_variables(key="ENCRYPTED_IMAGE_PATH", data=os.path.join(os.getcwd(), 'image', os.environ["ENCRYPTED_IMAGE_PATH"].split('/')[-1]))
+        set_environment_variables(key="OVMF_PATH", data=os.path.join(os.getcwd(), 'image', os.environ["OVMF_PATH"].split('/')[-1]))
+
         print(f"new FDE KEY : {os.environ["k_RFS"]}")
         assert self.encrypt_and_verify_image(), "TD encrypted image verification failed"
 
