@@ -38,9 +38,10 @@ def setup_environment():
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    print("Cleaning up after tests")
     dir_path = "TDXSampleUseCases/full-disk-encryption/ita-kbs/data"
     delete_files_in_subdirectories(dir_path)
-    img_dir_path = "TDXSampleUseCases/full-disk-encryption/tools/image"
+    img_dir_path = os.path.abspath("TDXSampleUseCases/full-disk-encryption/tools/image")
     if os.path.exists(img_dir_path):
         command = ["sudo", "rm", "-rf", "tdx-guest*", "OVMF_*", "my_venv", "tmp_fde"]
         run_command(command, cwd=img_dir_path)
