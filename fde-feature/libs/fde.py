@@ -6,6 +6,9 @@ import re
 import binascii
 import urllib.request
 import sys
+from tdx import clone_and_patch_tdx_repository, create_td_image
+sys.path.insert(1, os.path.join(os.getcwd(), 'configuration'))
+import configuration
 
 def update_and_install_packages():
     """Update package lists and install specified packages."""
@@ -84,10 +87,9 @@ def setup_ovmf_tdx(directory='data'):
     print(f"Extracted {file_name} to {extract_dir}")
 
 def setup_fde_environment():
-    repo_url = "https://github.com/IntelConfidentialComputing/TDXSampleUseCases.git"
-    repo_name = repo_url.split('/')[-1].replace('.git', '')
+    repo_name = configuration.repo_url.split('/')[-1].replace('.git', '')
     update_and_install_packages()
-    clone_repo(repo_url, repo_name, 'jkr0103/issues_fixes')
+    clone_repo(repo_url = configuration.repo_url, clone_dir = repo_name, branch = configuration.branch)
     fde_dir = os.path.join(repo_name, "full-disk-encryption")
     os.chdir(fde_dir)
     print(f"Changed working directory to {os.getcwd()}")
@@ -162,11 +164,16 @@ def encrypt_image(mode, skip_encrypt_image_path=False, extra_args=None):
     else:
         raise ValueError("Invalid mode. Use 'GET_QUOTE' or 'TD_FDE_BOOT'.")
 
-    retcode, output = run_command_with_popen(command)
+    retcode, output, error = run_command_with_popen(command)
     if retcode == 0:
         parse_and_set_ovmf_and_image_path("\n".join(output))
         return True
     else:
+        if (configuration.Error_r_negative in error and \
+            extra_args[extra_args.index('-r') + 1][0] == '-') or \
+            (configuration.Error_b_negative in error and \
+             extra_args[extra_args.index('-b') + 1][0] == '-'):
+            return True
         print("Error during image encryption:")
         print("\n".join(output))
         return False
@@ -175,7 +182,7 @@ def launch_td_guest():
     """Launch the TD guest."""
     set_environment_variables("TD_IMG", os.environ["ENCRYPTED_IMAGE_PATH"])
     ovmf_path = os.getenv('OVMF_PATH')
-    command = [f"tdx/guest-tools/run_td.sh -d false -f {ovmf_path}"]
+    command = [f"canonical-tdx/guest-tools/run_td.sh -d false -f {ovmf_path}"]
 
     print("Launching TD guest...")
     process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -250,9 +257,12 @@ def retrieve_encryption_key():
 
 def verify_td_encrypted_image(ssh_command=None):
     if not ssh_command:
-        ssh_command = "sshpass -p 123456 ssh -o StrictHostKeyChecking=no -p 10022 root@localhost 'sudo blkid'"
+        ssh_command = "sshpass -p 123456 ssh -o StrictHostKeyChecking=no -p 10022 root@localhost 'df -h | grep '/boot' | grep -v '/boot/';df -h | grep 'rootfs';cat /etc/os-release;uname -r;sudo blkid'"
     result = execute_td_command(ssh_command)
-    if result is not None and 'TYPE="crypto_LUKS"' in result:
+    if result is not None and \
+        configuration.fde_check in result and \
+        configuration.os_name_2404 in result and \
+        configuration.ubuntu_kernel_version in result:
         return True
     else:
         return False
