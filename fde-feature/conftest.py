@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), 'libs'))
 from rust import setup_rust
 from kms import setup_kms_environment
-from kbs import setup_kbs_environment
+from trustee_kbs import setup_trustee_environment
 from fde import setup_fde_environment
 from tdx import clone_and_patch_tdx_repository, create_td_image
 from docker import setup_docker_environment
@@ -27,8 +27,8 @@ def setup_environment():
     print("Setting up KMS environment")
     setup_kms_environment()
 
-    print("Setting up KBS environment")
-    setup_kbs_environment()
+    print("Setting up Trustee KBS environment")
+    setup_trustee_environment()
 
     print("Cloning and patching TDX repository")
     clone_and_patch_tdx_repository()
@@ -39,8 +39,13 @@ def setup_environment():
     yield
     # Cleanup after test session
     print("Cleaning up after tests")
-    dir_path = "TDXSampleUseCases/full-disk-encryption/ita-kbs/data"
-    delete_files_in_subdirectories(dir_path)
+    # Cleanup Trustee processes
+    import subprocess
+    try:
+        subprocess.run(["sudo", "pkill", "-f", "grpc-as"], check=False)
+        subprocess.run(["sudo", "pkill", "-f", "kbs"], check=False)
+    except:
+        pass
     img_dir_path = os.path.abspath("TDXSampleUseCases/full-disk-encryption/tools/image")
     if os.path.exists(img_dir_path):
         command = ["sudo", "rm", "-rf", "tdx-guest*", "OVMF_*", "my_venv", "tmp_fde"]

@@ -8,7 +8,7 @@ import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '../libs'))
 from fde import *
-from kbs import run_kbs, check_error_messages, get_docker_logs
+from trustee_kbs import run_trustee_kbs_stack, check_trustee_services
 from utils import set_environment_variables, run_command, get_ip_address, manage_qcow2_image
 from kms import login_to_vault
 
@@ -60,7 +60,7 @@ def run_command_with_forbidden_param( command, forbidden_param):
 
 def test_e2e_fde_workflow():
     """Tests the end-to-end FDE workflow."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image()
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -69,7 +69,7 @@ def test_e2e_fde_workflow():
 
 def test_e2e_fde_workflow_with_r_and_b_arg():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(extra_args=["-r", "5GB", "-b", "1GB"])
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -79,7 +79,7 @@ def test_e2e_fde_workflow_with_r_and_b_arg():
 
 def test_e2e_fde_workflow_with_r_and_b_default():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image()
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -89,7 +89,7 @@ def test_e2e_fde_workflow_with_r_and_b_default():
 
 def test_e2e_fde_workflow_with_r_usergiven():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(extra_args=["-r", "6GB"])
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -99,7 +99,7 @@ def test_e2e_fde_workflow_with_r_usergiven():
 
 def test_e2e_fde_workflow_with_b_usergiven():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(extra_args=["-b", "3GB"])
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -109,7 +109,7 @@ def test_e2e_fde_workflow_with_b_usergiven():
 
 def test_e2e_fde_workflow_with_r_and_b_kb():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(extra_args=["-r", "6000000KB", "-b", "3000000KB"])
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -119,7 +119,7 @@ def test_e2e_fde_workflow_with_r_and_b_kb():
 
 def test_e2e_fde_workflow_with_r_and_b_mb():
     """Tests the end-to-end FDE workflow with -r and -b arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(extra_args=["-r", "6000MB", "-b", "3000MB"])
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -129,22 +129,22 @@ def test_e2e_fde_workflow_with_r_and_b_mb():
 
 def test_e2e_fde_workflow_with_r_and_b_negative():
     """Tests the end-to-end FDE workflow with -r and -b negative arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     assert encrypt_image("GET_QUOTE", skip_encrypt_image_path=False, extra_args=["-r", "-10GB", "-b", "-2GB"]), "Expected failure when using negative values for -r and -b arguments"
 
 def test_e2e_fde_workflow_with_r_negative():
     """Tests the end-to-end FDE workflow with -r negative arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     assert encrypt_image("GET_QUOTE", skip_encrypt_image_path=False, extra_args=["-r", "-10GB"]), "Expected failure when using negative values for -r arguments"
 
 def test_e2e_fde_workflow_with_b_negative():
     """Tests the end-to-end FDE workflow with -b negative arguments."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     assert encrypt_image("GET_QUOTE", skip_encrypt_image_path=False, extra_args=["-b", "-2GB"]), "Expected failure when using negative values for -b arguments"
 
 def test_e2e_fde_workflow_with_skip_e_arg():
     """Tests the end-to-end FDE workflow with -skip-e ENCRYPTED IMAGE PATH argument."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image(skip_encrypt_image_path=True)
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -153,7 +153,7 @@ def test_e2e_fde_workflow_with_skip_e_arg():
 
 def test_e2e_fde_workflow_intel():
     """Tests the end-to-end FDE workflow."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image()
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -165,12 +165,11 @@ def test_fde_workflow_with_incorrect_vault_token():
     original_root_token = os.environ["VAULT_ROOT_TOKEN"]
     set_environment_variables(key="VAULT_ROOT_TOKEN", data="********************************")
     try:
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         encrypt_base_image()
         quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert not keys_set_success, "Expecting an error when retrieving encryption keys due to an invalid vault token."
-        assert check_error_messages(get_docker_logs()) is True, "Expecting kbs container logs to have error messages, but it looks clean"
     finally:
         set_environment_variables(key="VAULT_ROOT_TOKEN", data=original_root_token)
 
@@ -180,22 +179,21 @@ def test_fde_workflow_with_kv_secret_engine_disabled():
     enable_command = ["vault", "secrets", "enable", "-path=keybroker", "kv"]
     try:
         run_command(disable_command)
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         encrypt_base_image()
         quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert not keys_set_success, "Expecting an error when retrieving encryption keys with the KV secret engine disabled."
-        assert check_error_messages(get_docker_logs()) is True, "Expecting kbs container logs to have error messages, but it looks clean"
     finally:
         run_command(enable_command)
 
 @pytest.mark.parametrize("kbs_url", [
-    f"http://{get_ip_address()}:9443",  # Insecure URL
-    "https://incorrect-url:9443"        # Incorrect URL
+    f"http://{get_ip_address()}:8080",  # Insecure URL
+    "https://incorrect-url:8080"        # Incorrect URL
 ])
 def test_fde_workflow_with_various_kbs_urls( kbs_url: str):
     """Tests the FDE workflow with various KBS URLs."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     original_kbs_url = os.environ["KBS_URL"]
     set_environment_variables(key="KBS_URL", data=kbs_url)
     try:
@@ -212,19 +210,17 @@ def test_fde_workflow_with_incorrect_vault_token_and_corrupted_cert():
     original_root_token = os.environ["VAULT_ROOT_TOKEN"]
     set_environment_variables(key="VAULT_ROOT_TOKEN", data="********************************")
     try:
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         encrypt_base_image()
         quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert not keys_set_success, "Expecting an error when retrieving encryption keys due to an invalid vault token."
-        assert check_error_messages(get_docker_logs()) is True, "Expecting kbs container logs to have error messages, but it looks clean"
 
         set_environment_variables(key="VAULT_ROOT_TOKEN", data=original_root_token)
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
         assert not keys_set_success, "Expecting an error when retrieving encryption keys due to an invalid vault token."
-        assert check_error_messages(get_docker_logs()) is True, "Expecting kbs container logs to have error messages, but it looks clean"
     finally:
         set_environment_variables(key="VAULT_ROOT_TOKEN", data=original_root_token)
 
@@ -240,14 +236,13 @@ def test_fde_workflow_with_missing_parameters_retrieve_encryption_key():
     """Tests the FDE workflow with missing parameters for retrieving the encryption key."""
     cmd = [
         './fde-binaries/target/release/fde-key-gen',
-        '--kbs-env-file-path', os.environ.get("KBS_ENV", ""),
+        '--auth-private-key-path', '/etc/private.key',
         '--kbs-url', os.environ.get("KBS_URL", ""),
         '--kbs-cert-path', os.environ.get("KBS_CERT_PATH", ""),
         '--quote-b64', os.environ.get("QUOTE", ""),
-        '--pk-kr-path', os.environ.get("PK_KR_PATH", ""),
-        '--sk-kr-path', os.environ.get("SK_KR_PATH", "")
+        '--kbs-resource-path', os.environ.get("KBS_K_PATH", "")
     ]
-    for unset_var in ["KBS_ENV", "KBS_URL", "KBS_CERT_PATH", "QUOTE", "PK_KR_PATH", "SK_KR_PATH"]:
+    for unset_var in ["KBS_URL", "KBS_CERT_PATH", "QUOTE", "KBS_K_PATH"]:
         returncode = run_command_with_unset_env(cmd, unset_var)
         assert returncode != 0, "Retrieve encryption key command unexpectedly succeeded with {unset_var} unset"
 
@@ -284,10 +279,10 @@ def test_fde_workflow_with_missing_forbidden_parameters_encrypt_image():
         '-p', os.environ.get("ENCRYPTED_IMAGE_PATH", ""),
         '-u', os.environ.get("KBS_URL", ""),
         '-k', os.environ.get("k_RFS", ""),
-        '-i', os.environ.get("ID_k_RFS", "")
+        '-i', os.environ.get("KBS_K_PATH", "")
     ]
 
-    for unset_var in ["TMP_K_RFS_PATH", "ENCRYPTED_IMAGE_PATH", "KBS_URL", "k_RFS", "ID_k_RFS"]:
+    for unset_var in ["TMP_K_RFS_PATH", "ENCRYPTED_IMAGE_PATH", "KBS_URL", "k_RFS", "KBS_K_PATH"]:
         returncode = run_command_with_unset_env(td_fde_boot_cmd, unset_var)
         assert returncode != 0, "Encrypt base image command unexpectedly succeeded with {unset_var} unset"
 
@@ -309,7 +304,7 @@ def test_fde_workflow_with_invalid_quote():
     """Tests the FDE workflow with an invalid quote."""
     original_quote = ""
     try:
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         encrypt_base_image()
         quote = get_td_measurement()
         assert set_environment_variables(key="QUOTE", data=quote), "Failed to generate TD measurement"
@@ -325,7 +320,7 @@ def test_fde_workflow_with_invalid_encryption_key():
     """Tests the FDE workflow with an invalid encryption key."""
     original_fde_key = ""
     try:
-        assert run_kbs(), "Failed to run KBS"
+        assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
         encrypt_base_image()
         quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
         assert quote_set_success, "Failed to generate TD measurement"
@@ -339,7 +334,7 @@ def test_fde_workflow_with_invalid_encryption_key():
 
 def test_fde_workflow_with_incorrect_cred_encrypted_image():
     """Tests the FDE workflow with incorrect credentials for the encrypted image."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     encrypt_base_image()
     quote_set_success, keys_set_success = fetch_td_quote_and_encryption_keys()
     assert quote_set_success, "Failed to generate TD measurement"
@@ -350,7 +345,7 @@ def test_fde_workflow_with_incorrect_cred_encrypted_image():
 
 def test_fde_workflow_with_concurrent_encryption_attempt():
     """Tests the FDE workflow with concurrent encryption attempts."""
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     results = {}
     for i in range(2):
         results[f"run_{i}"] = encrypt_base_image()
@@ -362,7 +357,7 @@ def test_fde_workflow_with_concurrent_encryption_attempt():
 def test_fde_workflow_with_recover_fde_key_loss():
     """Tests the FDE workflow with recovery from FDE key loss."""
     # Run the KBS service
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     
     # Encrypt the base image
     encrypt_base_image()
@@ -393,7 +388,7 @@ def test_fde_workflow_with_recover_fde_key_loss():
 def test_fde_workflow_with_verify_encrypt_image_at_rest():
     """Tests the FDE workflow with verification of the encrypted image at rest."""
     # Run the KBS service
-    assert run_kbs(), "Failed to run KBS"
+    assert run_trustee_kbs_stack(), "Failed to run Trustee KBS"
     
     # Encrypt the base image
     encrypt_base_image()

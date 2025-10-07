@@ -3,13 +3,13 @@ branch=None
 folder_name="fde_source"
 dir_name = "TDXSampleUseCases/full-disk-encryption"
 
-kbs_url="https://github.com/intel/trustauthority-kbs.git"
-kbs_branch="v1.3.0"
-ita_dir_name = "ita-kbs"
+kbs_url="https://github.com/confidential-containers/trustee.git"
+kbs_branch="v0.14.0"
+trustee_dir_name = "trustee"
 container_name="kbs-container"
 
 canonical_tdx_url="https://github.com/canonical/tdx.git"
-canonical_tdx_branch="3.1"
+canonical_tdx_branch="3.2"
 canonical_tdx_dir = "canonical-tdx"
 
 image_directory =  "/fde_source/TDXSampleUseCases/full-disk-encryption/canonical-tdx/guest-tools/image"

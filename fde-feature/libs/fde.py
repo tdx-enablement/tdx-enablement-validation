@@ -153,12 +153,12 @@ def encrypt_image(mode, skip_encrypt_image_path=False, extra_args=None):
     elif mode == 'TD_FDE_BOOT':
         fde_key=os.environ["k_RFS"]
         kbs_url=os.environ["KBS_URL"]
-        key_id=os.environ["ID_k_RFS"]
+        key_path=os.environ["KBS_K_PATH"]
         command.extend([
             "-p", encrypted_image_path,
             "-u", kbs_url,
             "-k", fde_key,
-            "-i", key_id,
+            "-i", key_path,
             "-d", tmp_k_rfs_path,
         ])
     else:
@@ -236,7 +236,7 @@ def get_td_measurement():
 def retrieve_encryption_key():
     """Retrieve the encryption key."""
     required_vars = [
-        "KBS_ENV", "KBS_URL", "KBS_CERT_PATH", "QUOTE", "PK_KR_PATH", "SK_KR_PATH"
+        "KBS_URL", "KBS_CERT_PATH", "QUOTE", "KBS_K_PATH"
     ]
 
     for var in required_vars:
@@ -245,12 +245,11 @@ def retrieve_encryption_key():
 
     command = [
         './fde-binaries/target/release/fde-key-gen',
-        '--kbs-env-file-path', os.environ["KBS_ENV"],
+        '--auth-private-key-path', '/etc/private.key',
         '--kbs-url', os.environ["KBS_URL"],
         '--kbs-cert-path', os.environ["KBS_CERT_PATH"],
         '--quote-b64', os.environ["QUOTE"],
-        '--pk-kr-path', os.environ["PK_KR_PATH"],
-        '--sk-kr-path', os.environ["SK_KR_PATH"],
+        '--kbs-resource-path', os.environ["KBS_K_PATH"]
     ]
 
     return run_command(command)
